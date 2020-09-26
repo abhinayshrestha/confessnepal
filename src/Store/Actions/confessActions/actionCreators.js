@@ -2,9 +2,12 @@ import { LOADING_CONFESS, LOADING_CONFESS_SUCCESS, LOADING_CONFESS_ERROR, POSTIN
          POSTING_CONFESS_ERROR, LOADING_COMMENTS, LOADING_COMMENTS_SUCCESS, LOADING_COMMENTS_ERROR, POSTING_COMMENTS, POSTING_COMMENTS_SUCCESS,
          POSTING_COMMENTS_ERROR, LOADING_REPLIES, LOADING_REPLIES_SUCCESS, LOADING_REPLIES_ERROR, POSTING_REPLIES, POSTING_REPLIES_ERROR,
          POSTING_REPLIES_SUCCESS, UPDATING_CONFESS, UPDATING_CONFESS_ERROR, UPDATING_CONFESS_SUCCESS, UPDATING_COMMENT, UPDATING_COMMENT_ERROR,
-         UPDATING_COMMENT_SUCCESS, UPDATING_REPLY, UPDATING_REPLY_SUCCESS, UPDATING_REPLY_ERROR } from './confessActions';
+         UPDATING_COMMENT_SUCCESS, UPDATING_REPLY, UPDATING_REPLY_SUCCESS, UPDATING_REPLY_ERROR, DELETE_CONFESS_SUCCESS, DELETE_CONFESS_ERROR,
+         DELETING_CONFESS, DELETING_COMMENT, DELETE_COMMENT_SUCCESS, DELETE_COMMENT_ERROR, DELETING_REPLY, DELETE_REPLY_SUCCESS, DELETE_REPLY_ERROR,
+         LIKE_POST, UNLIKE_POST } from './confessActions';
 import axios from 'axios'
-import { success, postCommentSuccess, postReplySuccess, updateConfessSuccess, updateCommentSuccess, updateReplySuccess } from '../snackBarActions/actionCreators'
+import { success, postCommentSuccess, postReplySuccess, updateConfessSuccess, updateCommentSuccess, updateReplySuccess, deleteCommentSuccess,
+         deleteReplySuccess } from '../snackBarActions/actionCreators'
 
 export const loadConfess = () => {
     return (dispatch, getState) => {
@@ -198,6 +201,86 @@ export const updateReply = (payload, commentId) => {
             })
             .catch(err => {
                 dispatch({ type : UPDATING_REPLY_ERROR });
+                console.log(err);
+            })
+    }
+}
+
+export const deleteConfess = id => {
+    return (dispatch, getState) => {
+        dispatch({ type : DELETING_CONFESS });
+        const token = getState().authReducer.token;
+        axios.delete(`/post/delete/post/${id}`,
+             { headers : { Authorization : `Bearer ${token}` } })
+             .then(res => {
+                 dispatch({ type : DELETE_CONFESS_SUCCESS, id : id })
+             })
+             .catch(err => {
+                dispatch({ type : DELETE_CONFESS_ERROR })
+                 console.log(err);
+             })
+    }
+}
+
+export const deleteComment = (commentId, postId) => {
+    return (dispatch, getState) => {
+        dispatch({ type : DELETING_COMMENT });
+        const token = getState().authReducer.token;
+        axios.delete(`/post/delete/comment/${commentId}`,
+             { headers : { Authorization : `Bearer ${token}` } })
+             .then(res => {
+                 dispatch({ type : DELETE_COMMENT_SUCCESS, commentId : commentId, postId : postId })
+                 dispatch(deleteCommentSuccess());
+             })
+             .catch(err => {
+                dispatch({ type : DELETE_COMMENT_ERROR })
+                 console.log(err);
+             })
+    }
+}
+
+export const deleteReply = (replyId, commentId) => {
+    return (dispatch, getState) => {
+        dispatch({ type : DELETING_REPLY });
+        const token = getState().authReducer.token;
+        axios.delete(`/post/delete/reply/${replyId}`,
+             { headers : { Authorization : `Bearer ${token}` } })
+             .then(res => {
+                 dispatch({ type : DELETE_REPLY_SUCCESS, replyId : replyId, commentId : commentId })
+                 dispatch(deleteReplySuccess())
+             })
+             .catch(err => {
+                dispatch({ type : DELETE_REPLY_ERROR })
+                 console.log(err);
+             })
+    }
+}
+
+export const likePost = postId => {
+    return (dispatch, getState) => {
+        dispatch({ type : LIKE_POST, postId : postId });
+        const token = getState().authReducer.token;
+        axios.patch(`/post/like/post/${postId}`, null,
+            { headers : { Authorization : `Bearer ${token}` } })
+            .then(_ => {
+                
+            })
+            .catch(err => {
+
+            })
+    }
+}
+
+export const unlikePost = postId => {
+    return (dispatch, getState) => {
+        dispatch({ type : UNLIKE_POST, postId : postId });
+        const token = getState().authReducer.token;
+        axios.patch(`/post/unlike/post/${postId}`, null,
+            { headers : { Authorization : `Bearer ${token}` } })
+            .then(res => {
+                console.log(res);
+            })
+            .catch(err => {
                 console.log(err);
             })
     }

@@ -33,10 +33,6 @@ function About() {
        }
     }
 
-    React.useEffect(() => {
-        console.log(authLoader);
-    },[authLoader])
-
     return (
         <Container>
             <HeadLine variant='subtitle2' color='textPrimary' align='center' gutterBottom>

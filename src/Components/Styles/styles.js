@@ -13,7 +13,7 @@ export const CommentList = styled.div`
    margin-top : 7px;
    .comment {
         font-size : 0.95rem;
-        margin-left : 1rem;
+        margin-left : 0.5rem;
         display : flex;
         flex-direction : column;
         .desc {

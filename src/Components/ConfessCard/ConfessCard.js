@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Container, TopBar, Action, CommentInput, StyledTextArea, SmallAvatar } from './styles'
 import { Avatar, Typography, IconButton, Button, CircularProgress, ClickAwayListener, Hidden, Menu, MenuItem } from '@material-ui/core'
 import anonymous from '../../Assets/anonymous.jpg'
-// import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import ShareIcon from '@material-ui/icons/Share';
@@ -14,29 +14,31 @@ import { EmojioneV4 } from 'react-emoji-render';
 import { loadComments } from '../../Store/Actions/confessActions/actionCreators'
 import CommentsList from '../CommentsList/CommentsList'
 import EmojiEmotionsIcon from '@material-ui/icons/EmojiEmotions';
-import { useState } from 'react';
 import data from 'emoji-mart/data/google.json'
 import { NimblePicker } from 'emoji-mart'
 import test from '../../Assets/test.jpg'
 import SendIcon from '@material-ui/icons/Send';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
-import { postComment } from '../../Store/Actions/confessActions/actionCreators'
+import { postComment, likePost, unlikePost } from '../../Store/Actions/confessActions/actionCreators'
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import BookmarkBorderIcon from '@material-ui/icons/BookmarkBorder';
 import EditPostModal from '../EditPostModal/EditPostModal'
+import AlertBox from '../AlertBox/AlertBox'
 
 function ConfessCard() {
 
     const state = useSelector(state => state.confessReducer);
     const dispatch = useDispatch();
 
-    const loadCommentsHandler = (postId, index) => {
-         const skipDocument = (state.comments[postId] && state.comments[postId].length )|| 0;
-         (((state.comments[postId] && state.comments[postId].length) || -1) < state.confess[index].commentsCount) 
-            && dispatch(loadComments(postId, index, skipDocument));
+    const loadCommentsHandler = (postId, index, commentsCount) => {
+         if(commentsCount > 0){
+            const skipDocument = (state.comments[postId] && state.comments[postId].length )|| 0;
+            (((state.comments[postId] && state.comments[postId].length) || -1) < state.confess[index].commentsCount) 
+               && dispatch(loadComments(postId, index, skipDocument));
+         }
     }
-
+ 
     useEffect(() => {
         dispatch(loadConfess())
     }, [dispatch])
@@ -50,7 +52,12 @@ function ConfessCard() {
                             index={index}
                             comments={state.comments}/>  )
            } 
-           { state.confessLoader && <><CardSkeleton /><CardSkeleton /></> }
+           { state.confessLoader && 
+                    <>
+                      <CardSkeleton />
+                      <CardSkeleton />
+                    </> 
+            }
         </>
     )
 }
@@ -67,6 +74,16 @@ const Card = ({ confess, load, comments, index }) => {
     const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [openEditModal, setOpenEditModal] = React.useState(false)
+    const [alertBox, setAlertBox] = useState(null);
+
+    const closeAlertBox = () => {
+        setAlertBox(null);
+    }
+
+    const deleteHandler = confessId => {
+         handleClose();
+         setAlertBox(<AlertBox id={confessId} action='deleteConfess' closeHandler={closeAlertBox}/>)
+    }
 
     const showemojiHandler = el => {
         const rect = el.target.getBoundingClientRect();
@@ -108,14 +125,22 @@ const Card = ({ confess, load, comments, index }) => {
           setOpenEditModal(true)
       }
 
-    React.useEffect(() => {
+      const likeHandler = id => {
+          dispatch(likePost(id))
+      }
+
+      const unlikeHandler = id => {
+         dispatch(unlikePost(id))
+      }
+
+     React.useEffect(() => {
         if(success.value){
             setCommentText({});
         }
-    },[success])
-
+     },[success])
+ 
     return <Container elevation={0}>
-                  
+                    {alertBox}
                     <EditPostModal confess={confess} open={openEditModal} handleClose={closeEditModal}/>
                     {showEmojiPicker.value &&
                             <ClickAwayListener onClickAway={() => setShowEmojiPicker({ x : 0, y : 0, value : false})}>
@@ -153,8 +178,10 @@ const Card = ({ confess, load, comments, index }) => {
                               {(userId === confess.user._id) && <MenuItem dense onClick={openEditModalHandler}> 
                                         <EditIcon fontSize='small' style={{marginRight : '10px'}}/> Edit Confess
                                 </MenuItem>}
-                               {(userId === confess.user._id) &&  <MenuItem dense onClick={handleClose}>
-                                        <DeleteOutlineIcon fontSize='small' style={{marginRight : '10px'}}/> Delete Confess
+                               {(userId === confess.user._id) &&  <MenuItem dense onClick={deleteHandler.bind(null, confess._id)}>
+                                        <DeleteOutlineIcon
+                                                fontSize='small' 
+                                                style={{marginRight : '10px'}}/> Delete Confess
                                 </MenuItem>}
                                <MenuItem dense onClick={handleClose}>
                                         <BookmarkBorderIcon fontSize='small' style={{marginRight : '10px'}}/> Save Confess
@@ -165,23 +192,29 @@ const Card = ({ confess, load, comments, index }) => {
                        <EmojioneV4 size={64} text={confess.content}/>
                     </div>
                     <Action>
-                        <IconButton>
-                            {/* <FavoriteBorderIcon style={{ color : '#ff1a1a' }}/> */}
-                            <FavoriteBorderIcon />
-                        </IconButton>
-                        <Typography variant='caption' color='textSecondary'>
+                        {
+                            confess.liked ? 
+                            <IconButton onClick={unlikeHandler.bind(null, confess._id)} edge='end'>
+                                <FavoriteIcon style={{ color : '#ed4956' }}/>
+                            </IconButton>
+                            :
+                            <IconButton onClick={likeHandler.bind(null, confess._id)} edge='end'>
+                                <FavoriteBorderIcon/>
+                            </IconButton>
+                        }
+                        <Typography variant='subtitle2' color='textSecondary' style={{ marginLeft : '0.5rem', fontSize : '0.8rem' }}>
                             {confess.likesCount}
                         </Typography>
-                        <IconButton >
+                        <IconButton edge='end'>
                             <ChatBubbleOutlineIcon color='inherit'/>
                         </IconButton>
-                        <Typography variant='caption' color='textSecondary'>
+                        <Typography variant='subtitle2' color='textSecondary' style={{ marginLeft : '0.5rem', fontSize : '0.8rem' }}>
                             {confess.commentsCount}
                         </Typography>
-                        <IconButton >
+                        <IconButton edge='end'>
                             <ShareIcon color='inherit'/>
                         </IconButton>
-                        <Typography variant='caption' color='textSecondary'>
+                        <Typography variant='subtitle2' color='textSecondary' style={{ marginLeft : '0.5rem', fontSize : '0.8rem' }}>
                             {confess.shares}
                         </Typography>
                     </Action>
@@ -211,7 +244,7 @@ const Card = ({ confess, load, comments, index }) => {
                     <div className='action'>
                         <Button startIcon={(((comments[confess._id] && comments[confess._id].length) || -1) < confess.commentsCount) && <ArrowDropDownIcon />} 
                                 color='primary' size='small'
-                                onClick={load.bind(null, confess._id, index)}>
+                                onClick={load.bind(null, confess._id, index, confess.commentsCount)}>
                             View {confess.commentsCount - ((comments[confess._id] && comments[confess._id].length) || 0)} comments
                         </Button> 
                        {confess.loading && <CircularProgress size={20} style={{ marginLeft : '0.4rem' }}/>}

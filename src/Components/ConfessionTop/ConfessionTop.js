@@ -22,7 +22,7 @@ function Confessions() {
     const success = useSelector(state => state.snackBarReducer.success.postConfess)
     const [text, setText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('/others');
+    const [selectedCategory, setSelectedCategory] = useState('/all');
     const dispatch = useDispatch();
 
     const closePrivacySetting = value => {

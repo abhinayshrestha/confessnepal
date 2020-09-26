@@ -13,6 +13,7 @@ import RepliesList from '../RepliesList/RepliesList';
 import { useDispatch, useSelector } from 'react-redux'
 import { loadReplies } from '../../Store/Actions/confessActions/actionCreators'
 import ReplyModal from '../ReplyModal/ReplyModal';
+import AlertBox from '../AlertBox/AlertBox'
 
 JavascriptTimeAgo.addLocale(en);
 JavascriptTimeAgo.addLocale(ru);
@@ -23,10 +24,13 @@ function CommentsList({ comments, postId, isConfessPrivate, confessUser }) {
     const { replies, loadingReplies } = useSelector(state => state.confessReducer);
     const [openReplyModal, setOpenReplyModal] = useState(null);
     const { _id } = useSelector(state => state.userReducer.user);
+    const [openAlertBox, setOpenAlertBox] = useState(false);
 
     const loadRepliesHandler = (commentId, index) => {
-        (((replies[commentId] && replies[commentId].length) || -1) < comments[index].repliesCount) 
-                && dispatch(loadReplies(commentId, postId, index))
+        if(comments[index].repliesCount > 0) {
+            (((replies[commentId] && replies[commentId].length) || -1) < comments[index].repliesCount) 
+            && dispatch(loadReplies(commentId, postId, index))
+        }
     }
 
     const openModal = info => {
@@ -58,12 +62,21 @@ function CommentsList({ comments, postId, isConfessPrivate, confessUser }) {
          />);
     }
 
+    const deleteHandler = id => {
+        setOpenAlertBox(<AlertBox action='deleteComment' id={id} postId={postId} closeHandler={closeAlertBox}/>)
+    }
+
+    const closeAlertBox = () => {
+        setOpenAlertBox(null);
+    }
+
     const closeModal = () => {
         setOpenReplyModal(null);
     }
 
     return (
           <CommentListContainer>
+                {openAlertBox}
                 {openReplyModal}
                 {
                     comments && comments.map((commentList, index) => 
@@ -98,7 +111,7 @@ function CommentsList({ comments, postId, isConfessPrivate, confessUser }) {
                                                     color='textSecondary'
                                                     onClick={loadRepliesHandler.bind(null, commentList.comments._id, index)}
                                                     style={{ cursor : 'pointer', fontWeight : '500' }}>
-                                                View {commentList.repliesCount} replies
+                                                View {!commentList.showReplies ? commentList.repliesCount : 0} replies
                                         </Typography>
                                        { (commentList.comments.user._id === _id) && 
                                                 <Divider  orientation="vertical" flexItem style={{ margin : '0px 7px' }}/>}
@@ -111,6 +124,7 @@ function CommentsList({ comments, postId, isConfessPrivate, confessUser }) {
                                         {(confessUser === _id || (commentList.comments.user._id === _id)) && <Divider  orientation="vertical" flexItem style={{ margin : '0px 7px' }}/>}
                                         {(confessUser === _id || (commentList.comments.user._id === _id)) && <Typography variant='caption' 
                                                     color='textSecondary'
+                                                    onClick={deleteHandler.bind(null, commentList.comments._id)}
                                                     style={{ cursor : 'pointer', fontWeight : '500' }}>
                                                 Delete
                                         </Typography>}

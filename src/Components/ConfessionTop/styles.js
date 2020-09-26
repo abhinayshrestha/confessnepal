@@ -68,6 +68,12 @@ export const Action = styled.div`
 
 export const StyledFormControl = styled(FormControl)`
      &&& {
+        .MuiSelect-root {
+            font-size: 0.8125rem !important;
+            line-height: 1.3;
+            font-weight: 500;
+            padding-left: 1rem;
+        }
         .MuiInput-underline:before {
           display : none !important;
         }

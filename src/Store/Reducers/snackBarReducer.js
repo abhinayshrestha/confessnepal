@@ -1,5 +1,5 @@
 import { SUCCESS, ERROR, RESET_ERROR, RESET_SUCCESS, POST_COMMENT_SUCCESS, POST_REPLY_SUCCESS, UPDATE_CONFESS_SUCCESS, UPDATE_COMMENT_SUCCESS,
-        UPDATE_REPLY_SUCCESS } from '../Actions/snackBarActions/snackBarActions';
+        UPDATE_REPLY_SUCCESS, DELETING_COMMENT_SUCCESS, DELETING_REPLY_SUCCESS } from '../Actions/snackBarActions/snackBarActions';
 
 const initState = {
     success : {
@@ -9,6 +9,8 @@ const initState = {
         updateConfess: { value : false, msg : '' },
         updateComment: { value : false, msg : '' },
         updateReply: { value : false, msg : '' },
+        deleteComment: { value : false, msg : '' },
+        deleteReply: { value : false, msg : '' },
     },
     error : {
         value : false,
@@ -78,6 +80,26 @@ export const snackBarReducer = (state = initState, action) => {
                             }
                         }
                     }
+        case DELETING_COMMENT_SUCCESS :
+            return {
+                ...state,
+                success : {
+                    ...state.success,
+                    deleteComment : {
+                        value : true
+                    }
+                }
+            }
+        case DELETING_REPLY_SUCCESS :
+            return {
+                ...state,
+                success : {
+                    ...state.success,
+                    deleteReply : {
+                        value : true
+                    }
+                }
+            }
         case ERROR :
                     return {
                         ...state,

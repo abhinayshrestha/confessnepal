@@ -14,14 +14,10 @@ export const Container = styled(Paper)`
      .confess-text {
         padding : 1rem 0px 0.2rem;
         overflow-x : auto;
-        line-height : 1.4em;
+        line-height : 1.3rem;
         font-size : 1rem;
         white-space: break-spaces;
         word-break: break-word;
-        img{
-            height : 1.15rem !important;
-            width : 1.15rem !important;
-        }
      }
      .action {
          display : flex;
@@ -35,7 +31,7 @@ export const TopBar = styled.div`
    align-items : flex-start;
    position : relative;
    .avatar {
-       margin-right : 1rem;
+       margin-right : 0.7rem;
    }
    .top-bar-middle {
        display : flex;

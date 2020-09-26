@@ -1,5 +1,5 @@
 import { SUCCESS, ERROR, RESET_ERROR, RESET_SUCCESS, POST_COMMENT_SUCCESS, POST_REPLY_SUCCESS, UPDATE_CONFESS_SUCCESS, UPDATE_COMMENT_SUCCESS,
-        UPDATE_REPLY_SUCCESS } from './snackBarActions'
+        UPDATE_REPLY_SUCCESS, DELETING_COMMENT_SUCCESS, DELETING_REPLY_SUCCESS } from './snackBarActions'
 
 const resetSuccess = () => {
     return {
@@ -64,6 +64,24 @@ export const updateReplySuccess = () => {
         setTimeout(() => {
             dispatch(resetSuccess());
         },3000)
+    }
+}
+
+export const deleteCommentSuccess = () => {
+    return dispatch => {
+        dispatch({ type : DELETING_COMMENT_SUCCESS })
+        setTimeout(() => {
+            dispatch(resetSuccess());
+        },1000)
+    }
+}
+
+export const deleteReplySuccess = () => {
+    return dispatch => {
+        dispatch({ type : DELETING_REPLY_SUCCESS })
+        setTimeout(() => {
+            dispatch(resetSuccess());
+        },1000)
     }
 }
 

@@ -2,7 +2,9 @@ import { LOADING_CONFESS, LOADING_CONFESS_SUCCESS, LOADING_CONFESS_ERROR, POSTIN
          POSTING_CONFESS_ERROR, LOADING_COMMENTS, LOADING_COMMENTS_SUCCESS, LOADING_COMMENTS_ERROR, POSTING_COMMENTS, POSTING_COMMENTS_SUCCESS,
          POSTING_COMMENTS_ERROR, LOADING_REPLIES, LOADING_REPLIES_SUCCESS, LOADING_REPLIES_ERROR, POSTING_REPLIES, POSTING_REPLIES_SUCCESS,
          POSTING_REPLIES_ERROR, UPDATING_CONFESS_ERROR, UPDATING_CONFESS, UPDATING_CONFESS_SUCCESS,UPDATING_COMMENT, UPDATING_COMMENT_ERROR,
-         UPDATING_COMMENT_SUCCESS, UPDATING_REPLY, UPDATING_REPLY_SUCCESS, UPDATING_REPLY_ERROR } from '../Actions/confessActions/confessActions';
+         UPDATING_COMMENT_SUCCESS, UPDATING_REPLY, UPDATING_REPLY_SUCCESS, UPDATING_REPLY_ERROR,  DELETE_CONFESS_SUCCESS, DELETE_CONFESS_ERROR,
+         DELETING_CONFESS, DELETING_COMMENT, DELETE_COMMENT_SUCCESS, DELETE_COMMENT_ERROR, DELETING_REPLY, DELETE_REPLY_SUCCESS, DELETE_REPLY_ERROR,
+         LIKE_POST, UNLIKE_POST  } from '../Actions/confessActions/confessActions';
 
 const initState = {
     confess : [],
@@ -17,6 +19,7 @@ const initState = {
     updatingConfess : { value : false, id : '' },
     updatingComment : false,
     updatingReply : false,
+    deleteLoader : false
 }
 
 export const confessReducer = (state = initState, action) => {
@@ -248,6 +251,108 @@ export const confessReducer = (state = initState, action) => {
                              ...state,
                              updatingReply : false
                          }
+        case DELETING_CONFESS : 
+                         return {
+                             ...state,
+                             deleteLoader : true
+                         }
+        case DELETE_CONFESS_SUCCESS :
+                         const deleteIndex = state.confess.findIndex(con => con._id === action.id);
+                         let newCon = [...state.confess];
+                         newCon.splice(deleteIndex, 1);
+                         if(deleteIndex > -1) {
+                            return {
+                                ...state,
+                                deleteLoader : false,
+                                confess : newCon
+                            }
+                         }
+                         return {
+                             ...state
+                         }
+        case DELETE_CONFESS_ERROR :
+                        return {
+                            ...state,
+                            deleteLoader : false
+                        }       
+        case DELETING_COMMENT :
+                        return {
+                            ...state,
+                            deleteLoader : true
+                        }
+        case DELETE_COMMENT_SUCCESS :
+                        const dcI = state.comments[action.postId].findIndex( com => com.comments._id === action.commentId );
+                        const cI = state.confess.findIndex(con => con._id === action.postId);
+                        let nCon = [...state.confess];
+                        nCon[cI].commentsCount = nCon[cI].commentsCount - 1;
+                        let nC = [...state.comments[action.postId]];
+                        nC.splice(dcI, 1);
+                        if(dcI > -1) {
+                            return {
+                                ...state,
+                                deleteLoader : false,
+                                confess : nCon,
+                                comments : {
+                                    ...state.comments,
+                                    [action.postId] : nC 
+                                }
+                            }
+                        }
+                        return {
+                            ...state,
+                            deleteLoader : false
+                        }
+        case DELETE_COMMENT_ERROR :
+                        return {
+                            ...state,
+                            deleteLoader : false
+                        }
+        case DELETING_REPLY :
+                        return {
+                            ...state,
+                            deleteLoader : true
+                        }
+        case DELETE_REPLY_SUCCESS :
+                        const rI = state.replies[action.commentId].findIndex(reply => reply._id === action.replyId);
+                        let nR = [...state.replies[action.commentId]];
+                        if(rI > -1){
+                            nR.splice(rI, 1); 
+                            return {
+                                ...state,
+                                deleteLoader : false,
+                                replies : {
+                                    ...state.replies,
+                                    [action.commentId] : nR
+                                }
+                            }
+                        }
+                        return {
+                            ...state,
+                            deleteLoader : false
+                        }
+        case DELETE_REPLY_ERROR :
+                        return {
+                            ...state,
+                            deleteLoader : false
+                        }
+        case LIKE_POST :
+                    const lIndex = state.confess.findIndex(con => con._id === action.postId);
+                    let lConfess = [...state.confess];
+                    lConfess[lIndex].liked = true       
+                    lConfess[lIndex].likesCount = lConfess[lIndex].likesCount + 1;       
+                    return{
+                        ...state,
+                        confess : lConfess
+                    }
+        case UNLIKE_POST :
+                    const unlIndex = state.confess.findIndex(con => con._id === action.postId);
+                    let unlConfess = [...state.confess];
+                    unlConfess[unlIndex].liked = false       
+                    unlConfess[unlIndex].likesCount = unlConfess[unlIndex].likesCount - 1;       
+                    return{
+                        ...state,
+                        confess : unlConfess
+                    }
         default : return state;
     }
 }

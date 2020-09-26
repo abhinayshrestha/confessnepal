@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SmallAvatar ,CommentList } from '../Styles/styles'
 import { Chip } from './styles'
 import { Typography, Divider } from '@material-ui/core'
@@ -10,7 +10,8 @@ import JavascriptTimeAgo from "javascript-time-ago";
 import ReactTimeAgo from 'react-time-ago'
 import en from "javascript-time-ago/locale/en";
 import ru from "javascript-time-ago/locale/ru";
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
+import AlertBox from '../AlertBox/AlertBox';
 
 JavascriptTimeAgo.addLocale(en);
 JavascriptTimeAgo.addLocale(ru);
@@ -18,7 +19,7 @@ JavascriptTimeAgo.addLocale(ru);
 function RepliesList({ replies, commentId, openModal, confessUser, editReply }) {
 
     const { _id } = useSelector(state => state.userReducer.user);
-
+    const [openAlertBox, setOpenAlertBox] = useState(null)
     const replyHandler = reply => {
         const info = {
             _id : commentId,
@@ -32,9 +33,18 @@ function RepliesList({ replies, commentId, openModal, confessUser, editReply }) 
         editReply({ reply : reply.reply, replyId : reply._id }, commentId)
     }
 
+    const deleteHandler = id => {
+        setOpenAlertBox(<AlertBox action='deleteReply' id={id} closeHandler={closeAlertBox} commentId={commentId} />)
+    }
+
+    const closeAlertBox = () => {
+        setOpenAlertBox(null);
+    }
+
     return (
            replies ? replies.map(reply => 
                         <CommentList key={reply._id}>
+                            {openAlertBox}
                             <SmallAvatar src={reply.repliedBy.profilePicURL || anonymous} alt='' className='avatar'/>
                             <div className='comment'>
                                 <Typography style={{ display : 'flex', alignItems : 'center'}} 
@@ -74,6 +84,7 @@ function RepliesList({ replies, commentId, openModal, confessUser, editReply }) 
                                         {(confessUser === _id || (reply.repliedBy._id  === _id)) && <Divider  orientation="vertical" flexItem style={{ margin : '0px 7px' }}/>}
                                         {(confessUser === _id || (reply.repliedBy._id  === _id)) && <Typography variant='caption' 
                                                     color='textSecondary'
+                                                    onClick={deleteHandler.bind(null, reply._id)}
                                                     style={{ cursor : 'pointer', fontWeight : '500' }}>
                                                 Delete
                                         </Typography>}
@@ -81,9 +92,9 @@ function RepliesList({ replies, commentId, openModal, confessUser, editReply }) 
                             </div>
                         </CommentList>
                      ) 
-            :
-            null
-    )
+                        :
+                        null
+                )
 }
 
 export default RepliesList
