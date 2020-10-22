@@ -8,6 +8,7 @@ import { LOADING_CONFESS, LOADING_CONFESS_SUCCESS, LOADING_CONFESS_ERROR, POSTIN
 
 const initState = {
     confess : [],
+    hasMoreConfess : false,
     confessLoader : false,
     posting : false,
     loadingComments : false,
@@ -27,13 +28,15 @@ export const confessReducer = (state = initState, action) => {
         case LOADING_CONFESS :
                             return {
                                 ...state,
-                                confessLoader : true
+                                confessLoader : action.skipValue === 0 ? true : false,
+                                confess : action.skipValue === 0 ? [] : [...state.confess],
                             }
         case LOADING_CONFESS_SUCCESS :
                             return {
                                 ...state,
                                 confessLoader : false,
-                                confess : [...action.confess]
+                                hasMoreConfess : action.confess.length === 0 ? false : true,
+                                confess : action.skipValue === 0 ? [...action.confess] : state.confess.concat(action.confess)
                             }
         case LOADING_CONFESS_ERROR : 
                             return {

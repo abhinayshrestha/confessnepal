@@ -25,11 +25,14 @@ import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import BookmarkBorderIcon from '@material-ui/icons/BookmarkBorder';
 import EditPostModal from '../EditPostModal/EditPostModal'
 import AlertBox from '../AlertBox/AlertBox'
+import { useParams } from 'react-router-dom'
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 function ConfessCard() {
 
     const state = useSelector(state => state.confessReducer);
     const dispatch = useDispatch();
+    const params = useParams();
 
     const loadCommentsHandler = (postId, index, commentsCount) => {
          if(commentsCount > 0){
@@ -39,12 +42,26 @@ function ConfessCard() {
          }
     }
  
+    const scrollHandler = () => {
+        dispatch(loadConfess(params.tag, state.confess.length))
+    }
+
     useEffect(() => {
-        dispatch(loadConfess())
-    }, [dispatch])
+        dispatch(loadConfess(params.tag, 0))
+    }, [dispatch, params])
 
     return (
-        <>
+        <InfiniteScroll
+            dataLength = {state.confess.length}
+            next={scrollHandler}
+            hasMore={state.hasMoreConfess}
+            loader={
+                <>
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </> 
+            }
+        >
            {
                state.confess.map((confess, index) => <Card key={confess._id} 
                             load={loadCommentsHandler} 
@@ -52,13 +69,14 @@ function ConfessCard() {
                             index={index}
                             comments={state.comments}/>  )
            } 
-           { state.confessLoader && 
+           {
+               state.confessLoader &&
                     <>
-                      <CardSkeleton />
-                      <CardSkeleton />
+                        <CardSkeleton />
+                        <CardSkeleton />
                     </> 
-            }
-        </>
+           }
+        </InfiniteScroll>
     )
 }
 

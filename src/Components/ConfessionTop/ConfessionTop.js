@@ -47,7 +47,7 @@ function Confessions() {
             const data = {
                 content : text,
                 isPrivate : isPrivate,
-                tags : selectedCategory
+                tags : selectedCategory.substring(1)
             }
             dispatch(postConfess(data));
         }

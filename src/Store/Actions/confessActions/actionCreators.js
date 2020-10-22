@@ -9,17 +9,17 @@ import axios from 'axios'
 import { success, postCommentSuccess, postReplySuccess, updateConfessSuccess, updateCommentSuccess, updateReplySuccess, deleteCommentSuccess,
          deleteReplySuccess } from '../snackBarActions/actionCreators'
 
-export const loadConfess = () => {
+export const loadConfess = (tags, skipValue) => {
     return (dispatch, getState) => {
-        dispatch({ type : LOADING_CONFESS });
+        dispatch({ type : LOADING_CONFESS, skipValue : skipValue });
         const token = getState().authReducer.token;
-        axios.get(`/post/get-post/${0}`,
+        axios.get(`/post/get-post/${tags}/${skipValue}`,
          { headers : { Authorization : `Bearer ${token}` } })
          .then(res => {
              let data = res.data.map(confess =>{
                             return { ...confess, showComments : false, loading : false }
                         })
-                dispatch({ type : LOADING_CONFESS_SUCCESS, confess : data })
+                dispatch({ type : LOADING_CONFESS_SUCCESS, confess : data, skipValue : skipValue })
          })
          .catch(err => {
              dispatch({ type : LOADING_CONFESS_ERROR })
@@ -56,7 +56,7 @@ export const postConfess = data => {
              dispatch(success());
          })
          .catch(err => {
-             dispatch({ type : POSTING_CONFESS_ERROR })
+             dispatch({ type : POSTING_CONFESS_ERROR });
          })
     }
 }
@@ -278,7 +278,6 @@ export const unlikePost = postId => {
         axios.patch(`/post/unlike/post/${postId}`, null,
             { headers : { Authorization : `Bearer ${token}` } })
             .then(res => {
-                console.log(res);
             })
             .catch(err => {
                 console.log(err);

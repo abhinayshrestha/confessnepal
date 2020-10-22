@@ -90,6 +90,7 @@ export const StyledSelect = styled(Select)`
           font-size : 0.9rem;
           background : rgba(255, 255, 255, 0.1);
           border-radius : 20px;
+          padding-left : 1rem;
         }
     }
 `;
